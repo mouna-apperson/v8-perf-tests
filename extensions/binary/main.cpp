@@ -3,17 +3,18 @@
 #include <node.h>
 #include <node_buffer.h>
 #include <algorithm>
+#include <iostream>
 
 using namespace node;
 using namespace v8;
 
 void ExternalArrayWeakCallback(Persistent<Value> object, void* data) {
-  delete[] reinterpret_cast<int *>(data);
+  delete[] static_cast<int *>(data);
   object.Dispose();
 }
 
 Handle<Value> ArrayBuffer_do_test(const Arguments& args) {
-  int* data = reinterpret_cast<int *>(args.This()->GetPointerFromInternalField(0));
+  int* data = static_cast<int *>(args.This()->GetPointerFromInternalField(0));
   for(size_t i = 0; i != 8192; ++i){
     data[i] = i;
   }
@@ -48,13 +49,11 @@ Handle<Value> ArrayBuffer(const Arguments& args) {
 }
 
 Handle<Value> GetIntArrayItem(uint32_t index, const AccessorInfo &info) {
-  Local<Object> self = info.Holder();
-  return Number::New(reinterpret_cast<int *>(self->GetPointerFromInternalField(0))[index]);
+  return Number::New(static_cast<int *>(info.Holder()->GetPointerFromInternalField(0))[index]);
 }
 
 Handle<Value> SetIntArrayItem(uint32_t index, Local<Value> value, const AccessorInfo& info) {
-  Local<Object> self = info.Holder();
-  reinterpret_cast<int *>(self->GetPointerFromInternalField(0))[index] = value->Int32Value();
+  static_cast<int *>(info.Holder()->GetPointerFromInternalField(0))[index] = value->Int32Value();
 	return Undefined();
 }
 
@@ -83,7 +82,7 @@ struct SimpleObjectData {
 };
 
 void ExternalSimpleObjectWeakCallback(Persistent<Value> object, void* data) {
-  delete reinterpret_cast<SimpleObjectData *>(data);
+  delete static_cast<SimpleObjectData *>(data);
   object.Dispose();
 }
 
@@ -132,6 +131,23 @@ void SetC(Local<String> property, Local<Value> value, const AccessorInfo& info) 
   static_cast<SimpleObjectData*>(ptr)->c = value->Int32Value();
 }
 
+Handle<Value> SimpleObject_do_test(const Arguments& args) {
+  Local<External> wrap = Local<External>::Cast(args.This()->GetInternalField(0));
+  SimpleObjectData* ptr = static_cast<SimpleObjectData*>(wrap->Value());
+  ptr->a = 1;
+  ptr->b = 2;
+  ptr->c = 3;
+  for(size_t i = 0; i != 10000000; ++i){
+    ptr->a = (ptr->b - ptr->c) & 0xffffffff;
+    ptr->b = (ptr->a - ptr->c) & 0xffffffff;
+    ptr->c = (ptr->a - ptr->b) & 0xffffffff;
+    ptr->a = (ptr->c - ptr->b) & 0xffffffff;
+    ptr->b = (ptr->c - ptr->a) & 0xffffffff;
+    ptr->c = (ptr->b - ptr->a) & 0xffffffff;
+  }
+	return Undefined();
+}
+
 Handle<Value> SimpleObject(const Arguments& args) {
   void* data = new SimpleObjectData;
 
@@ -139,9 +155,9 @@ Handle<Value> SimpleObject(const Arguments& args) {
   persistentHandle.MakeWeak(data, ExternalSimpleObjectWeakCallback);
 
   args.This()->SetPointerInInternalField(0, data);
-  args.This()->SetAccessor(String::New("a"), GetA, SetA);
-  args.This()->SetAccessor(String::New("b"), GetB, SetB);
-  args.This()->SetAccessor(String::New("c"), GetC, SetC);
+
+  Persistent<Function> SimpleObject_do_test_function = Persistent<Function>::New(FunctionTemplate::New(SimpleObject_do_test)->GetFunction());
+  args.This()->Set(String::NewSymbol("do_test"), SimpleObject_do_test_function);
 
   return args.This();
 }
@@ -149,7 +165,7 @@ Handle<Value> SimpleObject(const Arguments& args) {
 Handle<Value> GetSimpleObjectItem(Local<String> property, const AccessorInfo &info) {
   Local<Object> self = info.Holder();
   Local<External> wrap = Local<External>::Cast(self->GetInternalField(0));
-  int* ptr = reinterpret_cast<int*>(wrap->Value());
+  int* ptr = static_cast<int*>(wrap->Value());
   char c = (*(String::AsciiValue(property)))[0];
   return Number::New(ptr[c-'a']);
 }
@@ -157,7 +173,7 @@ Handle<Value> GetSimpleObjectItem(Local<String> property, const AccessorInfo &in
 Handle<Value> SetSimpleObjectItem(Local<String> property, Local<Value> value, const AccessorInfo& info) {
   Local<Object> self = info.Holder();
   Local<External> wrap = Local<External>::Cast(self->GetInternalField(0));
-  int* ptr = reinterpret_cast<int*>(wrap->Value());
+  int* ptr = static_cast<int*>(wrap->Value());
   char c = (*(String::AsciiValue(property)))[0];
   ptr[c-'a'] = value->Int32Value();
 	return Undefined();
@@ -199,6 +215,9 @@ void init_all(Handle<Object> target) {
   // Simple object with integer a,b,c properties
   {
     simple_object_template = Persistent<FunctionTemplate>::New(FunctionTemplate::New(SimpleObject));
+    simple_object_template->InstanceTemplate()->SetAccessor(String::New("a"), GetA, SetA);
+    simple_object_template->InstanceTemplate()->SetAccessor(String::New("b"), GetB, SetB);
+    simple_object_template->InstanceTemplate()->SetAccessor(String::New("c"), GetC, SetC);
     simple_object_template->SetClassName(String::New("SimpleObject"));
     simple_object_template->InstanceTemplate()->SetInternalFieldCount(1);
     target->Set(String::NewSymbol("SimpleObject"), simple_object_template->GetFunction());

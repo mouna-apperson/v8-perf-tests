@@ -118,7 +118,7 @@
 
 (function(){
   var start = Date.now();
-  var v = new require('./binary.node').ArrayBuffer(8192);
+  var v = new (require('./binary.node').ArrayBuffer)(8192);
   for(var i = 0; i !== 8192; ++i){
     v[i] = i;
   }
@@ -133,7 +133,7 @@
 
 (function(){
   var start = Date.now();
-  var v = new require('./binary.node').InterceptorArray(8192);
+  var v = new (require('./binary.node').InterceptorArray)(8192);
   for(var i = 0; i !== 8192; ++i){
     v[i] = i;
   }
@@ -148,7 +148,7 @@
 
 (function(){
   var start = Date.now();
-  var v = new require('./binary.node').ArrayBuffer(8192);
+  var v = new (require('./binary.node').ArrayBuffer)(8192);
   v.do_test();
   var end = Date.now();
   console.log('Binary C++', end - start);
