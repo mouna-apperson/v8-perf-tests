@@ -154,7 +154,7 @@ Handle<Value> SimpleObject(const Arguments& args) {
   Persistent<Object> persistentHandle = Persistent<Object>::New(args.This());
   persistentHandle.MakeWeak(data, ExternalSimpleObjectWeakCallback);
 
-  args.This()->SetPointerInInternalField(0, data);
+  args.This()->SetInternalField(0, External::New(data));
 
   Persistent<Function> SimpleObject_do_test_function = Persistent<Function>::New(FunctionTemplate::New(SimpleObject_do_test)->GetFunction());
   args.This()->Set(String::NewSymbol("do_test"), SimpleObject_do_test_function);

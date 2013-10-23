@@ -407,7 +407,7 @@ function add_array_foreach(a,b){
 (function(source_array){
   var rv = source_array.slice(0);
   var start = Date.now();
-  for(var j = 0; j !== 10000; ++j){
+  for(var j = 0; j !== 1000; ++j){
     var helper = function helper(i){
       rv[i] = rv[i] + source_array[i];
     }
@@ -417,6 +417,6 @@ function add_array_foreach(a,b){
     }
   }
   var end = Date.now();
-  console.log('Extra immediately executed bind a helper function', end - start);
+  console.log('Extra immediately executed bind a helper function', end - start, 'x10');
 })(source_array);
 
