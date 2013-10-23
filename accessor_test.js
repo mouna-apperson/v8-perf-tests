@@ -127,7 +127,7 @@
 (function(){
   var start = Date.now();
   var v = new (require('./binary.node').SimpleObject);
-  console.log(v);
+  v.do_test();
   var end = Date.now();
   console.log('Using C++', end - start);
 })();
