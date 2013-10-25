@@ -92,6 +92,11 @@ function add_array(a,b){
   }
 }
 
+var ALWAYS_TRUE = Math.random() ? true : false;
+
+function does_nothing(){}
+var does_nothing2 = (ALWAYS_TRUE ? does_nothing : function(){console.log('never called');});
+
 function foreach_helper(i,index,a){a[index] += source_array[index];}
 
 function add_array_foreach(a,b){
@@ -108,6 +113,45 @@ function add_array_foreach(a,b){
   }
   var end = Date.now();
   console.log('Basic ops', end - start);
+})(source_array);
+
+(function(source_array){
+  var rv = source_array.slice(0);
+  var start = Date.now();
+  for(var j = 0; j !== 10000; ++j){
+    for(var i = 0; i !== source_array.length; ++i){
+      rv[i] = rv[i] + source_array[i];
+      does_nothing();
+    }
+  }
+  var end = Date.now();
+  console.log('Basic ops with empty function', end - start);
+})(source_array);
+
+(function(source_array){
+  var rv = source_array.slice(0);
+  var start = Date.now();
+  for(var j = 0; j !== 10000; ++j){
+    for(var i = 0; i !== source_array.length; ++i){
+      rv[i] = rv[i] + source_array[i];
+      does_nothing(rv, i, rv[i], source_array[i]);
+    }
+  }
+  var end = Date.now();
+  console.log('Basic ops with empty function that takes arguments', end - start);
+})(source_array);
+
+(function(source_array){
+  var rv = source_array.slice(0);
+  var start = Date.now();
+  for(var j = 0; j !== 10000; ++j){
+    for(var i = 0; i !== source_array.length; ++i){
+      rv[i] = rv[i] + source_array[i];
+      does_nothing2();
+    }
+  }
+  var end = Date.now();
+  console.log('Basic ops with empty function (determined by ternary)', end - start);
 })(source_array);
 
 (function(source_array){

@@ -86,6 +86,18 @@ var loop_new_array50_overhead;
 (function(){
   var start = Date.now();
   for(var j = 0; j !== 10000000; ++j){
+    var a = [1,2,3,4,5,6,7,8,9,10,1,2,3,4,5,6,7,8,9,10,1,2,3,4,5,6,7,8,9,10,1,2,3,4,5,6,7,8,9,10,1,2,3,4,5,6,7,8,9,10];
+    a.push(11);
+    a.push(14);
+    a.push(17);
+  }
+  var end = Date.now();
+  console.log('array[50].push(11) push(14) push(17)', end - start);
+})();
+
+(function(){
+  var start = Date.now();
+  for(var j = 0; j !== 10000000; ++j){
     var a = [1,2,3,4,5,6,7,8,9,10];
     a.unshift(11);
   }

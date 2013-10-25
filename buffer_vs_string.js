@@ -100,6 +100,63 @@ var test_string_x10 = test_buffer_x10.toString('ucs2');
 })();
 
 (function(){
+  var c = test_string;
+
+  var start = Date.now();
+  for(var j = 0; j !== 100000; ++j){
+    var l = c.length;
+    var d = new Buffer(l << 1);
+    for(var i = 0; i !== l; ++i){
+      var h = test_string.charCodeAt(i);
+      d[i << 1] = h & 255;
+      d[1 + (i << 1)] = h >> 8;
+    }
+  }
+  var end = Date.now();
+  console.log('create buffer[256] from String with charCodeAt', end - start);
+})();
+
+(function(){
+  var c = test_string.slice(0, 16);
+
+  var start = Date.now();
+  for(var j = 0; j !== 100000; ++j){
+    var d = new Buffer(c, "ucs2");
+  }
+  var end = Date.now();
+  console.log('create buffer[32] from String with new Buffer(..., "ucs2")', end - start);
+})();
+
+(function(){
+  var c = test_string.slice(0, 16);
+
+  var start = Date.now();
+  for(var j = 0; j !== 100000; ++j){
+    var l = c.length;
+    var d = new Buffer(l << 1);
+    for(var i = 0; i !== l; ++i){
+      var h = test_string.charCodeAt(i);
+      d[i << 1] = h & 255;
+      d[1 + (i << 1)] = h >> 8;
+    }
+  }
+  var end = Date.now();
+  console.log('create buffer[32] from String with charCodeAt', end - start);
+})();
+
+(function(){
+  var c = test_string.slice(0, 16);
+
+  var start = Date.now();
+  for(var j = 0; j !== 100000; ++j){
+    var d = new Buffer(2560);
+    d.write(c, 0, 2560, 'ucs2');
+  }
+  var end = Date.now();
+  console.log('create buffer[32] with new Buffer(32) and write(c, 0, 32, "ucs2")', end - start);
+})();
+
+(function(){
   var c = test_buffer_x10;
 
   var start = Date.now();
@@ -131,6 +188,23 @@ var test_string_x10 = test_buffer_x10.toString('ucs2');
   }
   var end = Date.now();
   console.log('create buffer[2560] with new Buffer(2560) and write(c, 0, 2560, "ucs2")', end - start);
+})();
+
+(function(){
+  var c = test_string_x10;
+
+  var start = Date.now();
+  for(var j = 0; j !== 100000; ++j){
+    var l = c.length;
+    var d = new Buffer(l << 1);
+    for(var i = 0; i !== l; ++i){
+      var h = test_string.charCodeAt(i);
+      d[i << 1] = h & 255;
+      d[1 + (i << 1)] = h >> 8;
+    }
+  }
+  var end = Date.now();
+  console.log('create buffer[2560] from String with charCodeAt', end - start);
 })();
 
 (function(){
